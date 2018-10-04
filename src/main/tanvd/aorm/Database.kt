@@ -2,6 +2,7 @@ package tanvd.aorm
 
 import tanvd.aorm.context.ConnectionContext
 import tanvd.aorm.exceptions.BasicDbException
+import tanvd.aorm.insert.InsertWorker
 import java.sql.Connection
 import javax.sql.DataSource
 
@@ -25,4 +26,5 @@ class Database(val name: String, private val dataSource: DataSource) {
     }
 }
 
-fun <T> withDatabase(db: Database, body: ConnectionContext.() -> T): T = ConnectionContext(db).body()
+fun <T> withDatabase(db: Database, insertWorker: InsertWorker? = null, body: ConnectionContext.() -> T): T = ConnectionContext(db, insertWorker).body()
+
