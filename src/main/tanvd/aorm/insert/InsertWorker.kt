@@ -3,9 +3,9 @@ package tanvd.aorm.insert
 import org.slf4j.LoggerFactory
 import tanvd.aorm.Database
 import tanvd.aorm.implementation.InsertClickhouse
-import tanvd.aorm.namedFactory
-import tanvd.aorm.shutdownNowGracefully
-import tanvd.aorm.withExceptionLogger
+import tanvd.aorm.utils.namedFactory
+import tanvd.aorm.utils.shutdownNowGracefully
+import tanvd.aorm.utils.withExceptionLogger
 import java.util.concurrent.ArrayBlockingQueue
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -19,6 +19,7 @@ interface InsertWorker {
 
 class DefaultInsertWorker(val name: String, queueSizeMax: Int = 10000,
                           delayTimeMs: Long = 30 * 1000,
+                          initalDelayTimeMs: Long = 30 * 1000,
                           betweenCallsTimeMs: Long = 10 * 1000) : InsertWorker {
 
     private val logger = LoggerFactory.getLogger(DefaultInsertWorker::class.java)
@@ -51,7 +52,7 @@ class DefaultInsertWorker(val name: String, queueSizeMax: Int = 10000,
                 }
                 Thread.sleep(betweenCallsTimeMs)
             }
-        }, delayTimeMs, delayTimeMs, TimeUnit.MILLISECONDS)
+        }, initalDelayTimeMs, delayTimeMs, TimeUnit.MILLISECONDS)
     }
 
     override fun add(db: Database, insertExpression: InsertExpression) {

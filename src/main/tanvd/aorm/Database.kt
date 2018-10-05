@@ -3,6 +3,7 @@ package tanvd.aorm
 import tanvd.aorm.context.ConnectionContext
 import tanvd.aorm.exceptions.BasicDbException
 import tanvd.aorm.insert.InsertWorker
+import tanvd.aorm.utils.use
 import java.sql.Connection
 import javax.sql.DataSource
 

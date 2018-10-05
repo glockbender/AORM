@@ -1,31 +1,10 @@
-package tanvd.aorm
+package tanvd.aorm.utils
 
 import org.slf4j.Logger
 import java.util.concurrent.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.concurrent.thread
 
-inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
-    var exception: Throwable? = null
-    try {
-        return block(this)
-    } catch (e: Throwable) {
-        exception = e
-        throw e
-    } finally {
-        when {
-            this == null -> {
-            }
-            exception == null -> close()
-            else ->
-                try {
-                    close()
-                } catch (closeException: Throwable) {
-                    exception.addSuppressed(closeException)
-                }
-        }
-    }
-}
 
 fun ScheduledExecutorService?.withExceptionLogger(logger: Logger) = ExecutorServiceWrapperWithExceptionLogger(this!!, logger)
 

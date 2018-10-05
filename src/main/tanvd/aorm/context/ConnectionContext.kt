@@ -47,8 +47,7 @@ class ConnectionContext(val db: Database, private val insertWorker: InsertWorker
         if (insertWorker == null) {
             throw NoInsertWorker("Lazy insert was performed, but InsertWorker is not present in this ConnectionContext")
         }
-        val row = InsertRow()
-        body(row)
+        val row = InsertRow().apply { body(this) }
         insertWorker.add(db, InsertExpression(this, row))
     }
 
@@ -61,8 +60,7 @@ class ConnectionContext(val db: Database, private val insertWorker: InsertWorker
         val rows = ArrayList<InsertRow>()
         val columnsFromRows = (columns.orEmpty() + columnsWithDefaults).toMutableSet()
         listIterator.forEach {
-            val row = InsertRow()
-            body(row, it)
+            val row = InsertRow().apply { body(this, it) }
             columnsFromRows.addAll(row.columns)
             rows.add(row)
         }
