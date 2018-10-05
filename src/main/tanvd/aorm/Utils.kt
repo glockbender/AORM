@@ -30,14 +30,11 @@ inline fun <T : AutoCloseable?, R> T.use(block: (T) -> R): R {
 fun ScheduledExecutorService?.withExceptionLogger(logger: Logger) = ExecutorServiceWrapperWithExceptionLogger(this!!, logger)
 
 class ExecutorServiceWrapperWithExceptionLogger(val delegate: ScheduledExecutorService, val logger: Logger) : ScheduledExecutorService by delegate {
-    override fun schedule(command: Runnable?, delay: Long, unit: TimeUnit?): ScheduledFuture<*>
-            = delegate.schedule(wrapRunnable(command), delay, unit)
+    override fun schedule(command: Runnable?, delay: Long, unit: TimeUnit?): ScheduledFuture<*> = delegate.schedule(wrapRunnable(command), delay, unit)
 
-    override fun scheduleAtFixedRate(command: Runnable?, initialDelay: Long, period: Long, unit: TimeUnit?): ScheduledFuture<*>
-            = delegate.scheduleAtFixedRate(wrapRunnable(command), initialDelay, period, unit)
+    override fun scheduleAtFixedRate(command: Runnable?, initialDelay: Long, period: Long, unit: TimeUnit?): ScheduledFuture<*> = delegate.scheduleAtFixedRate(wrapRunnable(command), initialDelay, period, unit)
 
-    override fun scheduleWithFixedDelay(command: Runnable?, initialDelay: Long, delay: Long, unit: TimeUnit?): ScheduledFuture<*>
-            = delegate.scheduleWithFixedDelay(wrapRunnable(command), initialDelay, delay, unit)
+    override fun scheduleWithFixedDelay(command: Runnable?, initialDelay: Long, delay: Long, unit: TimeUnit?): ScheduledFuture<*> = delegate.scheduleWithFixedDelay(wrapRunnable(command), initialDelay, delay, unit)
 
     private fun wrapRunnable(command: Runnable?) = Runnable {
         try {

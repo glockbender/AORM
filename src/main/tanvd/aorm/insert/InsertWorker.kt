@@ -17,13 +17,13 @@ interface InsertWorker {
     fun stop()
 }
 
-//TODO-tanvd need to work on delays between inserts
-class DefaultInsertWorker(val name: String, queueSizeMax: Int = 10000, delayTimeMs: Long = 30 * 1000, betweenCallsTimeMs: Long = 10 * 1000): InsertWorker {
+class DefaultInsertWorker(val name: String, queueSizeMax: Int = 10000,
+                          delayTimeMs: Long = 30 * 1000,
+                          betweenCallsTimeMs: Long = 10 * 1000) : InsertWorker {
 
     private val logger = LoggerFactory.getLogger(DefaultInsertWorker::class.java)
 
     private var isWorking = AtomicBoolean(true)
-
 
     private val insertWorker = Executors.newSingleThreadScheduledExecutor(namedFactory(name)).withExceptionLogger(logger)
     private val assetUsageQueue = ArrayBlockingQueue<Pair<Database, InsertExpression>>(queueSizeMax)
@@ -31,17 +31,26 @@ class DefaultInsertWorker(val name: String, queueSizeMax: Int = 10000, delayTime
     init {
         insertWorker.scheduleWithFixedDelay({
             val data = arrayListOf<Pair<Database, InsertExpression>>().apply { assetUsageQueue.drainTo(this) }
-            data.groupBy { it.first }.mapValues { it.value.map { it.second } }.forEach { (db, data) ->
-                val groupedByTables = data.groupBy { it.table }
-                for ((table, inserts) in groupedByTables) {
+            val preparedData = data.groupBy { it.first }.mapValues { it.value.map { it.second }.groupBy { it.table }.toMutableMap() }.toMutableMap()
+            while (preparedData.isNotEmpty()) {
+                for (db in preparedData.keys) {
+                    val tables = preparedData[db]!!
+                    val table = tables.keys.first()
+                    val inserts = tables[table]!!
+
                     val columns = table.columnsWithDefaults.toMutableSet()
                     columns += inserts.flatMap { it.columns }
                     val batchedInsertExpression = InsertExpression(table, columns, inserts.flatMap { it.values }.toMutableList())
                     InsertClickhouse.insert(db, batchedInsertExpression)
-                    Thread.sleep(betweenCallsTimeMs)
-                }
-            }
 
+                    tables.remove(table)
+
+                    if (tables.isEmpty()) {
+                        preparedData.remove(db)
+                    }
+                }
+                Thread.sleep(betweenCallsTimeMs)
+            }
         }, delayTimeMs, delayTimeMs, TimeUnit.MILLISECONDS)
     }
 

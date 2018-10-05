@@ -11,7 +11,7 @@ import tanvd.aorm.insert.InsertWorker
 import tanvd.aorm.query.Query
 import java.util.*
 
-class ConnectionContext(val db: Database, val insertWorker: InsertWorker? = null) {
+class ConnectionContext(val db: Database, private val insertWorker: InsertWorker? = null) {
     //Table
     fun Table.create() = TableClickhouse.create(db, this)
 
